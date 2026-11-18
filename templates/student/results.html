@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Results{% endblock %}
+{% block content %}
+<h3 class="mb-3">My Results</h3>
+{% for b in results %}
+<div class="card p-3 mb-3">
+  <div class="d-flex justify-content-between">
+    <h5>{{ b.exam.name }} <small class="text-muted">({{ b.exam.course.code }})</small></h5>
+    <h5>{{ b.evaluation.total_marks }} / {{ b.exam.max_marks }}</h5>
+  </div>
+  <p class="text-muted small mb-2">Examiner: {{ b.slot.examiner.name }} | Evaluated on {{ b.evaluation.evaluated_at.strftime('%d %b %Y') }}</p>
+  <table class="table table-sm table-bordered">
+    <tr><th>Criterion</th><th>Marks</th></tr>
+    {% for s in b.evaluation.scores %}
+    <tr><td>{{ s.rubric.criterion }}</td><td>{{ s.marks }} / {{ s.rubric.max_marks }}</td></tr>
+    {% endfor %}
+  </table>
+  <p class="mb-0"><b>Feedback:</b> {{ b.evaluation.remarks or 'No remarks' }}</p>
+</div>
+{% else %}
+<p class="text-muted">No published results yet.</p>
+{% endfor %}
+{% endblock %}
