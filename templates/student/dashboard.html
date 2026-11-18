@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Student Dashboard{% endblock %}
+{% block content %}
+<h3 class="mb-4">Welcome, {{ current_user.name }}</h3>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-3 col-6"><div class="card text-center p-3">
+    <div class="fs-2 fw-bold">{{ open_exams|length }}</div><div class="text-muted">Exams Open</div></div></div>
+  <div class="col-md-3 col-6"><div class="card text-center p-3">
+    <div class="fs-2 fw-bold">{{ open_slot_count }}</div><div class="text-muted">Available Slots</div></div></div>
+  <div class="col-md-3 col-6"><div class="card text-center p-3">
+    <div class="fs-2 fw-bold">{{ upcoming|length }}</div><div class="text-muted">Upcoming Exams</div></div></div>
+  <div class="col-md-3 col-6"><div class="card text-center p-3">
+    <div class="fs-2 fw-bold">{{ results|length }}</div><div class="text-muted">Results Published</div></div></div>
+</div>
+
+<h5>Open for Booking</h5>
+<table class="table table-bordered bg-white align-middle">
+  <tr><th>Exam</th><th>Course</th><th>Type</th><th>Booking Ends</th><th></th></tr>
+  {% for e in open_exams %}
+  <tr>
+    <td>{{ e.name }}</td>
+    <td>{{ e.course.code }}</td>
+    <td>{{ e.exam_type }}</td>
+    <td>{{ e.booking_end }}</td>
+    <td><a href="{{ url_for('exam_slots', exam_id=e.id) }}" class="btn btn-sm btn-primary">View Slots</a></td>
+  </tr>
+  {% else %}
+  <tr><td colspan="5" class="text-muted">No exams open for booking right now.</td></tr>
+  {% endfor %}
+</table>
+
+<h5 class="mt-4">My Upcoming Exams (Schedule)</h5>
+<table class="table table-bordered bg-white">
+  <tr><th>Exam</th><th>Date</th><th>Time</th><th>Examiner</th></tr>
+  {% for b in upcoming %}
+  <tr>
+    <td>{{ b.exam.name }}</td>
+    <td>{{ b.slot.date }}</td>
+    <td>{{ b.slot.start_time.strftime('%H:%M') }} - {{ b.slot.end_time.strftime('%H:%M') }}</td>
+    <td>{{ b.slot.examiner.name }}</td>
+  </tr>
+  {% else %}
+  <tr><td colspan="4" class="text-muted">No upcoming exams booked.</td></tr>
+  {% endfor %}
+</table>
+
+<h5 class="mt-4">Published Results</h5>
+<table class="table table-bordered bg-white">
+  <tr><th>Exam</th><th>Marks</th></tr>
+  {% for b in results %}
+  <tr><td>{{ b.exam.name }}</td><td>{{ b.evaluation.total_marks }} / {{ b.exam.max_marks }}</td></tr>
+  {% else %}
+  <tr><td colspan="2" class="text-muted">No results yet.</td></tr>
+  {% endfor %}
+</table>
+{% if results %}<a href="{{ url_for('student_results') }}">See detailed results and feedback</a>{% endif %}
+{% endblock %}
