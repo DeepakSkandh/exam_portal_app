@@ -10,7 +10,8 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///emp.db"
 db.init_app(app)
 
 login_manager = LoginManager(app)
-login_manager.login_view = "auth.login"
+login_manager.login_view = "login"
+login_manager.login_message_category = "warning"
 
 
 @login_manager.user_loader
@@ -31,15 +32,15 @@ def create_admin():
         db.session.commit()
 
 
-with app.app_context():
-    db.create_all()
-    create_admin()
+app.app_context().push()
+db.create_all()
+create_admin()
 
-
-@app.route("/")
-def home():
-    return "EMP is running"
-
+# importing these files registers all the routes
+import controllers.auth
+import controllers.admin
+import controllers.examiner
+import controllers.student
 
 if __name__ == "__main__":
     app.run(debug=True)
