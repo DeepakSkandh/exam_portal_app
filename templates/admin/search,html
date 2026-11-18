@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Search{% endblock %}
+{% block content %}
+<h3 class="mb-3">Search</h3>
+<form method="GET" class="d-flex gap-2 mb-4">
+  <input name="q" value="{{ q }}" class="form-control" placeholder="Name, email, roll no, course code or ID">
+  <button class="btn btn-primary">Search</button>
+</form>
+
+{% if q %}
+<h5>Students ({{ students|length }})</h5>
+<table class="table table-sm table-bordered bg-white">
+  <tr><th>ID</th><th>Name</th><th>Email</th><th>Roll No</th></tr>
+  {% for s in students %}
+  <tr><td>{{ s.id }}</td><td>{{ s.name }}</td><td>{{ s.email }}</td><td>{{ s.roll_no or '' }}</td></tr>
+  {% endfor %}
+</table>
+
+<h5>Examiners ({{ examiners|length }})</h5>
+<table class="table table-sm table-bordered bg-white">
+  <tr><th>ID</th><th>Name</th><th>Email</th><th>Department</th><th>Status</th></tr>
+  {% for e in examiners %}
+  <tr><td>{{ e.id }}</td><td>{{ e.name }}</td><td>{{ e.email }}</td><td>{{ e.department or '' }}</td><td>{{ e.status }}</td></tr>
+  {% endfor %}
+</table>
+
+<h5>Examinations ({{ exams|length }})</h5>
+<table class="table table-sm table-bordered bg-white">
+  <tr><th>ID</th><th>Name</th><th>Course</th><th>Type</th><th>Status</th></tr>
+  {% for e in exams %}
+  <tr><td>{{ e.id }}</td><td>{{ e.name }}</td><td>{{ e.course.code }}</td><td>{{ e.exam_type }}</td><td>{{ e.status }}</td></tr>
+  {% endfor %}
+</table>
+
+<h5>Bookings ({{ bookings|length }})</h5>
+<table class="table table-sm table-bordered bg-white">
+  <tr><th>ID</th><th>Student</th><th>Exam</th><th>Slot Date</th><th>Status</th></tr>
+  {% for b in bookings %}
+  <tr><td>{{ b.id }}</td><td>{{ b.student.name }}</td><td>{{ b.exam.name }}</td><td>{{ b.slot.date }}</td><td>{{ b.status }}</td></tr>
+  {% endfor %}
+</table>
+{% endif %}
+{% endblock %}

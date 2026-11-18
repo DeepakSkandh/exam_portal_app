@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Students{% endblock %}
+{% block content %}
+<h3 class="mb-3">All Students</h3>
+<table class="table table-bordered bg-white">
+  <tr><th>ID</th><th>Name</th><th>Email</th><th>Roll No</th><th>Phone</th><th>Bookings</th><th>Registered</th></tr>
+  {% for s in students %}
+  <tr>
+    <td>{{ s.id }}</td>
+    <td>{{ s.name }}</td>
+    <td>{{ s.email }}</td>
+    <td>{{ s.roll_no or '' }}</td>
+    <td>{{ s.phone or '' }}</td>
+    <td>{{ s.bookings|length }}</td>
+    <td>{{ s.created_at.strftime('%d %b %Y') }}</td>
+  </tr>
+  {% else %}
+  <tr><td colspan="7" class="text-muted">No students yet.</td></tr>
+  {% endfor %}
+</table>
+{% endblock %}
