@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Rubrics{% endblock %}
+{% block content %}
+<h3>Rubrics: {{ exam.name }} <small class="text-muted">({{ exam.course.code }})</small></h3>
+<p>Rubric marks used: <b>{{ total }}</b> / {{ exam.max_marks }}</p>
+
+<div class="card p-3 mb-3">
+  <form method="POST" class="row g-2">
+    <div class="col-md-3"><input name="criterion" class="form-control" placeholder="Criterion" required></div>
+    <div class="col-md-2"><input type="number" name="max_marks" min="1" class="form-control" placeholder="Max marks" required></div>
+    <div class="col-md-2"><input type="number" name="weightage" min="0" max="100" class="form-control" placeholder="Weightage %"></div>
+    <div class="col-md-3"><input name="description" class="form-control" placeholder="Description"></div>
+    <div class="col-md-2"><button class="btn btn-primary w-100">Add</button></div>
+  </form>
+</div>
+
+<table class="table table-bordered bg-white">
+  <tr><th>Criterion</th><th>Max Marks</th><th>Weightage</th><th>Description</th><th>Action</th></tr>
+  {% for r in exam.rubrics %}
+  <tr>
+    <td>{{ r.criterion }}</td>
+    <td>{{ r.max_marks }}</td>
+    <td>{{ r.weightage }}%</td>
+    <td>{{ r.description or '' }}</td>
+    <td>
+      <form method="POST" action="{{ url_for('delete_rubric', rubric_id=r.id) }}">
+        <button class="btn btn-sm btn-outline-danger">Remove</button>
+      </form>
+    </td>
+  </tr>
+  {% else %}
+  <tr><td colspan="5" class="text-muted">No criteria yet.</td></tr>
+  {% endfor %}
+</table>
+<a href="{{ url_for('admin_exams') }}" class="btn btn-secondary">Back</a>
+{% endblock %}
