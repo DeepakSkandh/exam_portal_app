@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}All Slots{% endblock %}
+{% block content %}
+<h3 class="mb-3">All Examination Slots</h3>
+<table class="table table-bordered bg-white align-middle">
+  <tr><th>ID</th><th>Exam</th><th>Date</th><th>Time</th><th>Booked</th><th>Status</th><th>Examiner</th></tr>
+  {% for s in slots %}
+  <tr>
+    <td>{{ s.id }}</td>
+    <td>{{ s.exam.name }} <small class="text-muted">({{ s.exam.course.code }})</small></td>
+    <td>{{ s.date }}</td>
+    <td>{{ s.start_time.strftime('%H:%M') }} - {{ s.end_time.strftime('%H:%M') }}</td>
+    <td>{{ s.booked_count }} / {{ s.capacity }}</td>
+    <td>{{ s.status }}</td>
+    <td>
+      <form method="POST" action="{{ url_for('change_slot_examiner', slot_id=s.id) }}" class="d-flex gap-1">
+        <select name="examiner_id" class="form-select form-select-sm">
+          {% for x in examiners %}
+          <option value="{{ x.id }}" {% if x.id == s.examiner_id %}selected{% endif %}>{{ x.name }}</option>
+          {% endfor %}
+        </select>
+        <button class="btn btn-sm btn-outline-dark">Change</button>
+      </form>
+    </td>
+  </tr>
+  {% else %}
+  <tr><td colspan="7" class="text-muted">No slots created yet.</td></tr>
+  {% endfor %}
+</table>
+{% endblock %}
