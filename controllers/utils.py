@@ -1,6 +1,7 @@
 from functools import wraps
 from flask import flash, redirect, url_for
 from flask_login import current_user, logout_user
+from datetime import datetime
 
 
 def role_required(role):
@@ -21,3 +22,16 @@ def role_required(role):
             return f(*args, **kwargs)
         return wrapper
     return decorator
+
+def to_date(text):
+    
+    if not text:
+        return None
+    return datetime.strptime(text, "%Y-%m-%d").date()
+
+
+def to_time(text):
+    
+    if not text:
+        return None
+    return datetime.strptime(text, "%H:%M").time()

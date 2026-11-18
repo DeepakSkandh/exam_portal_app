@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Examinations{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between mb-3">
+  <h3>Examinations</h3>
+  <a href="{{ url_for('add_exam') }}" class="btn btn-primary">+ New Examination</a>
+</div>
+
+<table class="table table-bordered bg-white align-middle">
+  <tr>
+    <th>ID</th><th>Name</th><th>Course</th><th>Type</th><th>Marks</th>
+    <th>Timeline</th><th>Examiners</th><th>Status</th><th>Results</th><th>Actions</th>
+  </tr>
+  {% for e in exams %}
+  <tr>
+    <td>{{ e.id }}</td>
+    <td>{{ e.name }}</td>
+    <td>{{ e.course.code }}</td>
+    <td>{{ e.exam_type }}</td>
+    <td>{{ e.max_marks }}</td>
+    <td class="small">
+      Slots: {{ e.slot_start }} to {{ e.slot_end }}<br>
+      Booking: {{ e.booking_start }} to {{ e.booking_end }}
+    </td>
+    <td class="small">
+      {% for x in e.examiners %}{{ x.name }}<br>{% else %}<span class="text-danger">None</span>{% endfor %}
+    </td>
+    <td>
+      <form method="POST" action="{{ url_for('change_exam_status', exam_id=e.id) }}" class="d-flex gap-1">
+        <select name="status" class="form-select form-select-sm">
+          {% for s in statuses %}
+          <option {% if e.status == s %}selected{% endif %}>{{ s }}</option>
+          {% endfor %}
+        </select>
+        <button class="btn btn-sm btn-dark">Set</button>
+      </form>
+    </td>
+    <td>
+      <form method="POST" action="{{ url_for('toggle_results', exam_id=e.id) }}">
+        {% if e.results_published %}
+          <button class="btn btn-sm btn-success">Published (hide)</button>
+        {% else %}
+          <button class="btn btn-sm btn-outline-secondary">Publish</button>
+        {% endif %}
+      </form>
+    </td>
+    <td class="d-flex gap-1">
+      <a href="{{ url_for('edit_exam', exam_id=e.id) }}" class="btn btn-sm btn-outline-primary">Edit</a>
+      <a href="{{ url_for('exam_rubrics', exam_id=e.id) }}" class="btn btn-sm btn-outline-info">Rubrics</a>
+      <form method="POST" action="{{ url_for('delete_exam', exam_id=e.id) }}">
+        <button class="btn btn-sm btn-outline-danger">Remove</button>
+      </form>
+    </td>
+  </tr>
+  {% else %}
+  <tr><td colspan="10" class="text-muted">No examinations yet.</td></tr>
+  {% endfor %}
+</table>
+<p class="small text-muted">
+  <b>Slot Creation</b> opens slot creation for examiners. <b>Booking Open</b> opens booking for students.
+  <b>Closed</b> stops both.
+</p>
+{% endblock %}
