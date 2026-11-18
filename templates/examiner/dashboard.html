@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Examiner Dashboard{% endblock %}
+{% block content %}
+<h3 class="mb-4">Examiner Dashboard</h3>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-3 col-6"><div class="card text-center p-3">
+    <div class="fs-2 fw-bold">{{ exams|length }}</div><div class="text-muted">Assigned Exams</div></div></div>
+  <div class="col-md-3 col-6"><div class="card text-center p-3">
+    <div class="fs-2 fw-bold">{{ slot_count }}</div><div class="text-muted">Slots Created</div></div></div>
+  <div class="col-md-3 col-6"><div class="card text-center p-3">
+    <div class="fs-2 fw-bold">{{ booked_count }}</div><div class="text-muted">Students Booked</div></div></div>
+  <div class="col-md-3 col-6"><div class="card text-center p-3">
+    <div class="fs-2 fw-bold">{{ pending|length }}</div><div class="text-muted">Pending Evaluations</div></div></div>
+</div>
+
+<h5>Assigned Examinations</h5>
+<table class="table table-bordered bg-white align-middle">
+  <tr><th>Exam</th><th>Course</th><th>Type</th><th>Slot Creation Window</th><th>Status</th><th></th></tr>
+  {% for e in exams %}
+  <tr>
+    <td>{{ e.name }}</td>
+    <td>{{ e.course.code }}</td>
+    <td>{{ e.exam_type }}</td>
+    <td>{{ e.slot_start }} to {{ e.slot_end }}</td>
+    <td>
+      {{ e.status }}
+      {% if e.slot_creation_open() %}<span class="badge bg-success">Open for slots</span>{% endif %}
+    </td>
+    <td><a href="{{ url_for('examiner_slots', exam_id=e.id) }}" class="btn btn-sm btn-primary">My Slots</a></td>
+  </tr>
+  {% else %}
+  <tr><td colspan="6" class="text-muted">No exams assigned to you yet.</td></tr>
+  {% endfor %}
+</table>
+
+<h5 class="mt-4">Pending Evaluations</h5>
+<table class="table table-bordered bg-white align-middle">
+  <tr><th>Student</th><th>Exam</th><th>Slot</th><th></th></tr>
+  {% for b in pending %}
+  <tr>
+    <td>{{ b.student.name }} <small class="text-muted">({{ b.student.roll_no }})</small></td>
+    <td>{{ b.exam.name }}</td>
+    <td>{{ b.slot.date }} {{ b.slot.start_time.strftime('%H:%M') }}</td>
+    <td><a href="{{ url_for('evaluate', booking_id=b.id) }}" class="btn btn-sm btn-success">Evaluate</a></td>
+  </tr>
+  {% else %}
+  <tr><td colspan="4" class="text-muted">Nothing pending.</td></tr>
+  {% endfor %}
+</table>
+{% endblock %}
