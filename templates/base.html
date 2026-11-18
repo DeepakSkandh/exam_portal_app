@@ -23,6 +23,11 @@
             <li class="nav-item"><a class="nav-link" href="{{ url_for('admin_bookings') }}">Bookings</a></li>
             <li class="nav-item"><a class="nav-link" href="{{ url_for('admin_students') }}">Students</a></li>
             <li class="nav-item"><a class="nav-link" href="{{ url_for('admin_search') }}">Search</a></li>
+        {% elif current_user.role == 'student' %}
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('student_exams') }}">Exams</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('my_bookings') }}">My Bookings</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('student_results') }}">Results</a></li>
+
         {% endif %}
         </ul>
       <span class="navbar-text me-3">{{ current_user.name }} ({{ current_user.role }})</span>
