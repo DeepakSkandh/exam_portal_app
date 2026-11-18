@@ -2,6 +2,7 @@ from flask import current_app as app, render_template, request, redirect, url_fo
 from werkzeug.security import generate_password_hash
 from controllers.utils import role_required, to_date
 from models import db, User, Course, Exam, Rubric, Slot, Booking, Score
+from sqlalchemy import or_
 
 EXAM_TYPES = ["Viva", "Practical", "Project Demo", "Assessment"]
 EXAM_STATUSES = ["Draft", "Slot Creation", "Booking Open", "Closed", "Completed"]
@@ -88,7 +89,7 @@ def admin_exams():
 
 
 def fill_exam_from_form(exam):
-    # used by both add and edit. returns an error message, or None if all good
+    
     form = request.form
     exam.course_id = int(form.get("course_id"))
     exam.name = form.get("name", "").strip()
@@ -290,3 +291,112 @@ def examiner_action(user_id, action):
 
     db.session.commit()
     return redirect(request.referrer or url_for("admin_examiners"))
+
+# ---------------- slots ----------------
+
+@app.route("/admin/slots")
+@role_required("admin")
+def admin_slots():
+    slots = Slot.query.order_by(Slot.date, Slot.start_time).all()
+    examiners = User.query.filter_by(role="examiner", status="approved").all()
+    return render_template("admin/slots.html", slots=slots, examiners=examiners)
+
+
+@app.route("/admin/slots/<int:slot_id>/examiner", methods=["POST"])
+@role_required("admin")
+def change_slot_examiner(slot_id):
+    # for exceptional cases, e.g. the examiner is not available that day
+    slot = db.get_or_404(Slot, slot_id)
+    new_examiner = db.session.get(User, int(request.form.get("examiner_id") or 0))
+
+    if not new_examiner or new_examiner.role != "examiner" or new_examiner.status != "approved":
+        flash("Pick an approved examiner.", "danger")
+        return redirect(url_for("admin_slots"))
+
+    slot.examiner_id = new_examiner.id
+    if new_examiner not in slot.exam.examiners:
+        slot.exam.examiners.append(new_examiner)
+    db.session.commit()
+    flash(f"Slot #{slot.id} is now assigned to {new_examiner.name}.", "success")
+    return redirect(url_for("admin_slots"))
+
+
+
+@app.route("/admin/bookings")
+@role_required("admin")
+def admin_bookings():
+    bookings = Booking.query.order_by(Booking.booked_at.desc()).all()
+    return render_template("admin/bookings.html", bookings=bookings)
+
+
+@app.route("/admin/bookings/<int:booking_id>/reschedule", methods=["GET", "POST"])
+@role_required("admin")
+def reschedule_booking(booking_id):
+    booking = db.get_or_404(Booking, booking_id)
+    if booking.status != "Booked" or booking.evaluation:
+        flash("Only active bookings that are not evaluated yet can be rescheduled.", "warning")
+        return redirect(url_for("admin_bookings"))
+
+   
+    options = Slot.query.filter(Slot.exam_id == booking.exam_id,
+                                Slot.id != booking.slot_id,
+                                Slot.status == "Available").all()
+
+    if request.method == "POST":
+        new_slot = db.session.get(Slot, int(request.form.get("slot_id") or 0))
+        if not new_slot or new_slot not in options:
+            flash("Pick a valid slot with free seats.", "danger")
+            return redirect(url_for("reschedule_booking", booking_id=booking.id))
+
+        old_slot = booking.slot
+        old_slot.booked_count -= 1
+        old_slot.refresh_status()
+
+        new_slot.booked_count += 1
+        new_slot.refresh_status()
+
+        booking.slot = new_slot
+        booking.note = f"Rescheduled by admin from slot #{old_slot.id}"
+        db.session.commit()
+        flash("Booking rescheduled.", "success")
+        return redirect(url_for("admin_bookings"))
+
+    return render_template("admin/reschedule.html", booking=booking, options=options)
+
+
+
+
+@app.route("/admin/students")
+@role_required("admin")
+def admin_students():
+    students = User.query.filter_by(role="student").order_by(User.id).all()
+    return render_template("admin/students.html", students=students)
+
+
+@app.route("/admin/search")
+@role_required("admin")
+def admin_search():
+    q = request.args.get("q", "").strip()
+    students, examiners, exams, bookings = [], [], [], []
+
+    if q:
+        like = f"%{q}%"
+        qid = int(q) if q.isdigit() else -1   # so searching "3" also matches ID 3
+
+        students = User.query.filter(
+            User.role == "student",
+            or_(User.name.ilike(like), User.email.ilike(like), User.roll_no.ilike(like), User.id == qid)
+        ).all()
+        examiners = User.query.filter(
+            User.role == "examiner",
+            or_(User.name.ilike(like), User.email.ilike(like), User.department.ilike(like), User.id == qid)
+        ).all()
+        exams = Exam.query.join(Course).filter(
+            or_(Exam.name.ilike(like), Course.code.ilike(like), Course.name.ilike(like), Exam.id == qid)
+        ).all()
+        bookings = Booking.query.join(User, Booking.student_id == User.id).filter(
+            or_(User.name.ilike(like), Booking.id == qid)
+        ).all()
+
+    return render_template("admin/search.html", q=q, students=students,
+                           examiners=examiners, exams=exams, bookings=bookings)
