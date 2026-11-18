@@ -15,8 +15,16 @@
     {% if current_user.is_authenticated %}
       <ul class="navbar-nav me-auto">
         <li class="nav-item"><a class="nav-link" href="{{ url_for('home') }}">Dashboard</a></li>
-        {# role-wise links get added here in later steps #}
-      </ul>
+        {% if current_user.role == 'admin' %}
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('admin_courses') }}">Courses</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('admin_exams') }}">Exams</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('admin_examiners') }}">Examiners</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('admin_slots') }}">Slots</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('admin_bookings') }}">Bookings</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('admin_students') }}">Students</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('admin_search') }}">Search</a></li>
+        {% endif %}
+        </ul>
       <span class="navbar-text me-3">{{ current_user.name }} ({{ current_user.role }})</span>
       <a class="btn btn-outline-light btn-sm me-2" href="{{ url_for('profile') }}">Profile</a>
       <a class="btn btn-outline-light btn-sm" href="{{ url_for('logout') }}">Logout</a>
