@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Examinations{% endblock %}
+{% block content %}
+<h3 class="mb-3">Examinations</h3>
+
+<form method="GET" class="row g-2 mb-3">
+  <div class="col-md-4"><input name="q" value="{{ q }}" class="form-control" placeholder="Search exam or course"></div>
+  <div class="col-md-3">
+    <select name="type" class="form-select">
+      <option value="">All types</option>
+      {% for t in types %}
+      <option {% if exam_type == t %}selected{% endif %}>{{ t }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-md-3">
+    <select name="course" class="form-select">
+      <option value="">All courses</option>
+      {% for c in courses %}
+      <option value="{{ c.id }}" {% if course_id == c.id|string %}selected{% endif %}>{{ c.code }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-md-2"><button class="btn btn-primary w-100">Filter</button></div>
+</form>
+
+<table class="table table-bordered bg-white align-middle">
+  <tr><th>Exam</th><th>Course</th><th>Type</th><th>Duration</th><th>Max Marks</th><th>Booking Window</th><th>Status</th><th></th></tr>
+  {% for e in exams %}
+  <tr>
+    <td>{{ e.name }}</td>
+    <td>{{ e.course.code }}</td>
+    <td>{{ e.exam_type }}</td>
+    <td>{{ e.duration }} min</td>
+    <td>{{ e.max_marks }}</td>
+    <td>{{ e.booking_start }} to {{ e.booking_end }}</td>
+    <td>{{ e.status }}</td>
+    <td>
+      {% if e.id in my_exam_ids %}
+        <span class="badge bg-success">Booked</span>
+      {% elif e.booking_open() %}
+        <a href="{{ url_for('exam_slots', exam_id=e.id) }}" class="btn btn-sm btn-primary">Book</a>
+      {% else %}
+        <a href="{{ url_for('exam_slots', exam_id=e.id) }}" class="btn btn-sm btn-outline-secondary">View</a>
+      {% endif %}
+    </td>
+  </tr>
+  {% else %}
+  <tr><td colspan="8" class="text-muted">No examinations found.</td></tr>
+  {% endfor %}
+</table>
+{% endblock %}
