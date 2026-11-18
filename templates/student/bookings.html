@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}My Bookings{% endblock %}
+{% block content %}
+<h3 class="mb-3">My Bookings (History)</h3>
+<table class="table table-bordered bg-white align-middle">
+  <tr><th>ID</th><th>Exam</th><th>Slot</th><th>Examiner</th><th>Booked On</th><th>Status</th><th>Note</th><th></th></tr>
+  {% for b in bookings %}
+  <tr>
+    <td>{{ b.id }}</td>
+    <td>{{ b.exam.name }} <small class="text-muted">({{ b.exam.course.code }})</small></td>
+    <td>{{ b.slot.date }} {{ b.slot.start_time.strftime('%H:%M') }}</td>
+    <td>{{ b.slot.examiner.name }}</td>
+    <td>{{ b.booked_at.strftime('%d %b %Y %H:%M') }}</td>
+    <td>
+      {% if b.status == 'Booked' %}<span class="badge bg-primary">Booked</span>
+      {% elif b.status == 'Completed' %}<span class="badge bg-success">Completed</span>
+      {% else %}<span class="badge bg-secondary">Cancelled</span>{% endif %}
+    </td>
+    <td class="small">{{ b.note or '' }}</td>
+    <td>
+      {% if b.status == 'Booked' and b.exam.booking_open() %}
+      <form method="POST" action="{{ url_for('cancel_booking', booking_id=b.id) }}">
+        <button class="btn btn-sm btn-outline-danger">Cancel</button>
+      </form>
+      {% endif %}
+    </td>
+  </tr>
+  {% else %}
+  <tr><td colspan="8" class="text-muted">You haven't booked anything yet.</td></tr>
+  {% endfor %}
+</table>
+{% endblock %}
