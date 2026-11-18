@@ -93,6 +93,12 @@ class Slot(db.Model):
     def available_seats(self):
         return self.capacity - self.booked_count
 
+    def refresh_status(self):
+       
+        if self.status in ("Cancelled", "Completed"):
+            return
+        self.status = "Full" if self.booked_count >= self.capacity else "Available"
+
 
 class Booking(db.Model):
     id = db.Column(db.Integer, primary_key=True)
